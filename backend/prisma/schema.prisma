@@ -15,8 +15,11 @@ datasource db {
 
 model User {
   id Int @id @default(autoincrement())
-  username String
+  username String @unique
   password String
+
+  cart Product[]
+  Token Token[]
 }
 
 model Product {
@@ -24,4 +27,12 @@ model Product {
   name String
   price Int
   description String
+
+  User User[]
+}
+
+model Token {
+  token String @id
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
 }
