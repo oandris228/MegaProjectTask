@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -32,6 +32,16 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    const loadToken = async () => {
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        setUser({ token });
+      }
+    };
+    loadToken();
+  }, []);
+
   const login = async (username: string, password: string) => {
     try {
       const response = await fetch('http://localhost:3000/users/login', {
@@ -57,6 +67,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const validate = async () => {
+    if (!user?.token && !localStorage.getItem("authToken")) return; // Ensure there's a token
+
     try {
       const response = await fetch("http://localhost:3000/users", {
         method: "GET",
@@ -64,17 +76,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           Authorization: `Bearer ${user?.token || localStorage.getItem("authToken")}`,
         },
       });
-  
+
       if (!response.ok) throw new Error("Validation failed");
-  
+
       const data = await response.json();
       setUser({
         id: data.id,
         username: data.username,
-        password: data.password,
         token: user?.token || localStorage.getItem("authToken")!,
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Validation error:", error);
       setUser(null);
       localStorage.removeItem("authToken");

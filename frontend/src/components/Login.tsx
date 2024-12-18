@@ -12,7 +12,6 @@ export function Login() {
     const handleSubmit = async (e: any)=> {
         e.preventDefault();
         await login(name, password);
-        console.log(user);
         navigate('/profil');
 
     }
